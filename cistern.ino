@@ -18,7 +18,7 @@
 #define statusLEDPin 3
 #define manualPumpPin 2
 //#define timeOutDuration 10000
-#define timeOutDuration 208000
+#define timeOutDuration 375000
 
 // Enumerations
 enum levelSwitchState{full, empty, unknown};
@@ -54,12 +54,20 @@ levelSwitchState readLevelSwitch()
 
 void manualPump()
 {
+  if(programState == timedOut)
+  {
+    programState = waiting;
+    return;
+  }
+  else if(programState == filling)
+  {
+    programState = timedOut;
+    return;
+  }
   digitalWrite(motorDrivePin, HIGH);
   digitalWrite(statusLEDPin, HIGH);
   while(digitalRead(manualPumpPin) == LOW)
   {
-
-
   }
   digitalWrite(motorDrivePin, LOW);
   digitalWrite(statusLEDPin, LOW);
@@ -116,6 +124,7 @@ void loop()
         digitalWrite(statusLEDPin, LOW);
         delay(100);
       }
+      delay(10000); //Fill a little bit over the level switch for hysteresis
       digitalWrite(motorDrivePin, LOW);
       digitalWrite(statusLEDPin, LOW);
       break;
